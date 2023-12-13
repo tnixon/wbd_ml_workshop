@@ -35,9 +35,14 @@
 
 import mlflow
 #Added for the demo purpose
-run = get_automl_churn_run(f'{dbName}.dbdemos_mlops_churn_features', force_refresh = False)
+xp_path = f"/Users/{current_user}/databricks_automl/{dbName}"
+filter_string=f"name LIKE '{xp_path}/%'"
+expId = mlflow.search_experiments(filter_string=filter_string,order_by=["last_update_time DESC"])[0].experiment_id
+print(filter_string)
+print(expId)
+
 # Use MLflow to track experiments
-mlflow.set_experiment(run["experiment_path"])
+mlflow.set_experiment(experiment_id=expId)
 
 target_col = "churn"
 
