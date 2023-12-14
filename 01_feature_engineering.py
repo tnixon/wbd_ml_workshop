@@ -2,16 +2,6 @@
 # MAGIC %md
 # MAGIC # Churn Prediction Feature Engineering
 # MAGIC Our first step is to analyze the data and build the features we'll use to train our model. Let's see how this can be done.
-# MAGIC
-# MAGIC <img src="https://github.com/QuentinAmbard/databricks-demo/raw/main/product_demos/mlops-end2end-flow-1.png" width="1200">
-# MAGIC
-# MAGIC <!-- Collect usage data (view). Remove it to disable collection. View README for more details.  -->
-# MAGIC <img width="1px" src="https://www.google-analytics.com/collect?v=1&gtm=GTM-NKQ8TT7&tid=UA-163989034-1&cid=555&aip=1&t=event&ec=field_demos&ea=display&dp=%2F42_field_demos%2Ffeatures%2Fmlops%2F02_feature_prep&dt=MLOPS">
-# MAGIC <!-- [metadata={"description":"MLOps end2end workflow: Feature engineering",
-# MAGIC  "authors":["quentin.ambard@databricks.com"],
-# MAGIC  "db_resources":{},
-# MAGIC   "search_tags":{"vertical": "retail", "step": "Data Engineering", "components": ["feature store"]},
-# MAGIC                  "canonicalUrl": {"AWS": "", "Azure": "", "GCP": ""}}] -->
 
 # COMMAND ----------
 
@@ -153,6 +143,7 @@ automl_run = automl.classify(
     experiment_dir = xp_path,
     dataset = fe.read_table(name = f'{dev_catalog}.{dbName}.{tableName}'),
     target_col = "churn",
+    exclude_frameworks = ["lightgbm"],
     timeout_minutes = 10
     ) 
 

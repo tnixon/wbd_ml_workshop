@@ -32,9 +32,30 @@ dbName = db_prefix+"_"+current_user_no_at
 
 # COMMAND ----------
 
+# table names
+bronze_table_name = 'churn_bronze_customers'
+update_table_name = 'churn_updates'
+feature_table_name = 'dbdemos_mlops_churn_features'
+model_name = f"churn_model_{current_user_no_at}"
+baseline_table_name = 'churn_baseline'
+predictions_table_name = 'churn_predictions'
+
+# COMMAND ----------
+
 # user-level databases & tables
+
+# dev tables
 dev_user_schema = f"{dev_catalog}.{dbName}"
-dev_user_bronze = f"{dev_catalog}.{dbName}.churn_bronze_customers"
+dev_user_bronze = f"{dev_catalog}.{dbName}.{bronze_table_name}"
+dev_user_features = f"{dev_catalog}.{dbName}.{feature_table_name}"
+dev_model_path = f"{dev_catalog}.{dbName}.{model_name}"
+dev_predictions = f"{dev_catalog}.{dbName}.{predictions_table_name}"
+
+# prod tables
 prod_user_schema = f"{prod_catalog}.{dbName}"
-prod_user_bronze = f"{prod_catalog}.{dbName}.churn_bronze_customers"
-prod_user_update = f"{prod_catalog}.{dbName}.churn_updates"
+prod_user_bronze = f"{prod_catalog}.{dbName}.{bronze_table_name}"
+prod_user_update = f"{prod_catalog}.{dbName}.{update_table_name}"
+prod_user_features = f"{prod_catalog}.{dbName}.{feature_table_name}"
+prod_model_path = f"{prod_catalog}.{dbName}.{model_name}"
+prod_predictions = f"{prod_catalog}.{dbName}.{predictions_table_name}"
+prod_baseline = f"{prod_catalog}.{dbName}.{baseline_table_name}"

@@ -35,15 +35,15 @@
 # MAGIC
 # MAGIC In this demo, we'll implement a full MLOps pipeline, step by step:
 # MAGIC
-# MAGIC <img src="https://github.com/QuentinAmbard/databricks-demo/raw/main/product_demos/mlops-end2end-flow-0.png" width="1200">
+# MAGIC 1. Feature Engineering
+# MAGIC 1. Model development & tuning with AutoML & HyperOpt
+# MAGIC 1. Registering model into Unity Catalog
+# MAGIC 1. Model validation testing
+# MAGIC 1. Promoting model into Production
+# MAGIC 1. Configuring of Model Monitoring
+# MAGIC 1. Batch prediction pipeline
+# MAGIC 1. Automating retraining
 # MAGIC
-# MAGIC <!-- Collect usage data (view). Remove it to disable collection. View README for more details.  -->
-# MAGIC <img width="1px" src="https://www.google-analytics.com/collect?v=1&gtm=GTM-NKQ8TT7&tid=UA-163989034-1&cid=555&aip=1&t=event&ec=field_demos&ea=display&dp=%2F42_field_demos%2Ffeatures%2Fmlops%2F01_presentation&dt=MLOPS">
-# MAGIC <!-- [metadata={"description":"MLOps end2end workflow: workflow presentation & introduction",
-# MAGIC  "authors":["quentin.ambard@databricks.com"],
-# MAGIC  "db_resources":{},
-# MAGIC   "search_tags":{"vertical": "retail", "step": "Data Engineering", "components": ["EDA"]},
-# MAGIC                  "canonicalUrl": {"AWS": "", "Azure": "", "GCP": ""}}] -->
 
 # COMMAND ----------
 
@@ -61,8 +61,6 @@
 # MAGIC Our Data Engineer team provided us a dataset collecting informations on our customer base, including churn information. That's where our implementation starts.
 # MAGIC
 # MAGIC Let's see how we can implement such a model, but also provide our marketing and renewal team with Dashboards to track and analyze our Churn prediction.
-# MAGIC
-# MAGIC Ultimately, we will be able to build a [complete DBSQL Churn Dashboard](/sql/dashboards/f25702b4-56d8-40a2-a69d-d2f0531a996f-churn-prediction-dashboard---universal?o=1444828305810485#) containing all our customer & churn information!
 
 # COMMAND ----------
 

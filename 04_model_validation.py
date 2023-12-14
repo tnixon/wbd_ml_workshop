@@ -1,26 +1,14 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # Model STAGING validation JOB
+# MAGIC # Model validation
 # MAGIC
-# MAGIC This notebook execution is automatically triggered using MLFLow webhook. It's defined as a **job** and will programatically validate the model before moving it to STAGING.
-# MAGIC
-# MAGIC <img src="https://github.com/QuentinAmbard/databricks-demo/raw/main/product_demos/mlops-end2end-flow-5.png" width="1200">
-# MAGIC
-# MAGIC <!-- Collect usage data (view). Remove it to disable collection. View README for more details.  -->
-# MAGIC <img width="1px" src="https://www.google-analytics.com/collect?v=1&gtm=GTM-NKQ8TT7&tid=UA-163989034-1&cid=555&aip=1&t=event&ec=field_demos&ea=display&dp=%2F42_field_demos%2Ffeatures%2Fmlops%2F05_job_staging_validation&dt=MLOPS">
-# MAGIC <!-- [metadata={"description":"MLOps end2end workflow: Trigger Model testing and validation job.",
-# MAGIC  "authors":["quentin.ambard@databricks.com"],
-# MAGIC  "db_resources":{},
-# MAGIC   "search_tags":{"vertical": "retail", "step": "Model testing", "components": ["mlflow"]},
-# MAGIC                  "canonicalUrl": {"AWS": "", "Azure": "", "GCP": ""}}] -->
+# MAGIC This notebook execution can be automatically triggered from CI/CD to test the validity of new `challenger` models.
 
 # COMMAND ----------
 
 # MAGIC %md-sandbox
 # MAGIC
 # MAGIC ## General Validation Checks
-# MAGIC
-# MAGIC <img style="float: right" src="https://github.com/QuentinAmbard/databricks-demo/raw/main/retail/resources/images/churn-mlflow-webhook-1.png" width=600 >
 # MAGIC
 # MAGIC In the context of MLOps, there are more tests than simply how accurate a model will be.  To ensure the stability of our ML system and compliance with any regulatory requirements, we will subject each model added to the registry to a series of validation checks.  These include, but are not limited to:
 # MAGIC <br><br>
@@ -54,6 +42,7 @@
 
 import mlflow
 from mlflow.tracking.client import MlflowClient
+
 mlflow.set_registry_uri('databricks-uc')
 
 # COMMAND ----------

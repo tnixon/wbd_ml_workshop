@@ -5,16 +5,6 @@
 # MAGIC We have selected the notebook from best run from the Auto ML experiment and reusing it to build our model.
 # MAGIC
 # MAGIC All the code below has been automatically generated. As Data Scientist, I can tune it based on the business knowledge I have if needed.
-# MAGIC
-# MAGIC <img src="https://github.com/QuentinAmbard/databricks-demo/raw/main/product_demos/mlops-end2end-flow-2.png" width="1200">
-# MAGIC
-# MAGIC <!-- Collect usage data (view). Remove it to disable collection. View README for more details.  -->
-# MAGIC <img width="1px" src="https://www.google-analytics.com/collect?v=1&gtm=GTM-NKQ8TT7&tid=UA-163989034-1&cid=555&aip=1&t=event&ec=field_demos&ea=display&dp=%2F42_field_demos%2Ffeatures%2Fmlops%2F02_auto_ml&dt=MLOPS">
-# MAGIC <!-- [metadata={"description":"MLOps end2end workflow: Auto-ML notebook",
-# MAGIC  "authors":["quentin.ambard@databricks.com"],
-# MAGIC  "db_resources":{},
-# MAGIC   "search_tags":{"vertical": "retail", "step": "Data Engineering", "components": ["auto-ml"]},
-# MAGIC                  "canonicalUrl": {"AWS": "", "Azure": "", "GCP": ""}}] -->
 
 # COMMAND ----------
 
@@ -24,12 +14,7 @@
 
 # MAGIC %md
 # MAGIC # XGBoost training
-# MAGIC This is an auto-generated notebook. To reproduce these results, attach this notebook to the **SR_demo** cluster and rerun it.
-# MAGIC - Compare trials in the [MLflow experiment](#mlflow/experiments/3087977229142441/s?orderByKey=metrics.%60val_f1_score%60&orderByAsc=false)
-# MAGIC - Navigate to the parent notebook [here](#notebook/3087977229142439) (If you launched the AutoML experiment using the Experiments UI, this link isn't very useful.)
-# MAGIC - Clone this notebook into your project folder by selecting **File > Clone** in the notebook toolbar.
-# MAGIC
-# MAGIC Runtime Version: _8.4.x-cpu-ml-scala2.12_
+# MAGIC This is an auto-generated notebook. 
 
 # COMMAND ----------
 

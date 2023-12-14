@@ -2,11 +2,9 @@
 # MAGIC %md
 # MAGIC ### Managing the model lifecycle with Model Registry
 # MAGIC
-# MAGIC <img src="https://github.com/QuentinAmbard/databricks-demo/raw/main/product_demos/mlops-end2end-flow-4.png" width="1200">
-# MAGIC
 # MAGIC One of the primary challenges among data scientists and ML engineers is the absence of a central repository for models, their versions, and the means to manage them throughout their lifecycle.  
 # MAGIC
-# MAGIC [The MLflow Model Registry](https://docs.databricks.com/applications/mlflow/model-registry.html) addresses this challenge and enables members of the data team to:
+# MAGIC By managing your [models in Unity Catalog](https://docs.databricks.com/en/machine-learning/manage-model-lifecycle/index.html), we can addresses this challenge and enables members of the data team to:
 # MAGIC <br><br>
 # MAGIC * **Discover** registered models, current stage in model development, experiment runs, and associated code with a registered model
 # MAGIC * **Transition** models to different stages of their lifecycle
@@ -14,25 +12,18 @@
 # MAGIC * **Test** models in an automated fashion
 # MAGIC * **Document** models throughout their lifecycle
 # MAGIC * **Secure** access and permission for model registrations, transitions or modifications
-# MAGIC
-# MAGIC <!-- Collect usage data (view). Remove it to disable collection. View README for more details.  -->
-# MAGIC <img width="1px" src="https://www.google-analytics.com/collect?v=1&gtm=GTM-NKQ8TT7&tid=UA-163989034-1&cid=555&aip=1&t=event&ec=field_demos&ea=display&dp=%2F42_field_demos%2Ffeatures%2Fmlops%2F04_deploy_to_registry&dt=MLOPS">
-# MAGIC <!-- [metadata={"description":"MLOps end2end workflow: Move model to registry and request transition to STAGING.",
-# MAGIC  "authors":["quentin.ambard@databricks.com"],
-# MAGIC  "db_resources":{},
-# MAGIC   "search_tags":{"vertical": "retail", "step": "Data Engineering", "components": ["mlflow"]},
-# MAGIC                  "canonicalUrl": {"AWS": "", "Azure": "", "GCP": ""}}] -->
-# MAGIC                  
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### How to Use the Model Registry
-# MAGIC Typically, data scientists who use MLflow will conduct many experiments, each with a number of runs that track and log metrics and parameters. During the course of this development cycle, they will select the best run within an experiment and register its model with the registry.  Think of this as **committing** the model to the registry, much as you would commit code to a version control system.  
+# MAGIC ### How to Use the Models in UC
+# MAGIC Typically, data scientists who use MLflow will conduct many experiments, each with a number of runs that track and log metrics and parameters. During the course of this development cycle, they will select the best run within an experiment and register its model with UC.  Think of this as **committing** the model to UC, much as you would commit code to a version control system.  
 # MAGIC
 # MAGIC The registry defines several model stages: `None`, `Staging`, `Production`, and `Archived`. Each stage has a unique meaning. For example, `Staging` is meant for model testing, while `Production` is for models that have completed the testing or review processes and have been deployed to applications. 
 # MAGIC
-# MAGIC Users with appropriate permissions can transition models between stages.
+# MAGIC Unity catalog allows administrators to define catalogs to represent the resources to be accessed from different environments. For example, production systems can run from a production catalog while data scientists and engineers can work in a development catalog. Models in any catalog can be given an `Alias` that signifies which version of a model is currently the latest one for a particular use. Common aliases in clude `Champion` for the current production model while `Challenger` might be used to indicate a new candidate model undergoing testing & review.
+# MAGIC
+# MAGIC Users with appropriate permissions can transition models between catalogs and aliases.
 
 # COMMAND ----------
 
@@ -141,14 +132,8 @@ client.update_model_version(
 # MAGIC %md
 # MAGIC ### Next: MLOps model testing and validation
 # MAGIC
-# MAGIC Because we defined our webhooks earlier, a job will automatically start, testing the new model being deployed and validating the request.
-# MAGIC
-# MAGIC Remember our webhook setup ? That's the orange part in the diagram.
-# MAGIC
-# MAGIC <img style="float: right" src="https://github.com/QuentinAmbard/databricks-demo/raw/main/retail/resources/images/churn-mlflow-webhook-1.png" width=600 >
-# MAGIC
-# MAGIC If the model passes all the tests, it'll be accepted and moved into STAGING. Otherwise it'll be rejected, and a slack notification will be sent.
-# MAGIC
-# MAGIC Next: 
-# MAGIC  * Find out how the model is being tested befored moved to STAGING [using the Databricks Staging test notebook]($./05_job_staging_validation) (optional)
-# MAGIC  * Or discover how to [run Batch and Real-time inference from our STAGING model]($./06_staging_inference)
+# MAGIC Next: Find out how the model is being tested before promotion to production [using the Databricks Staging test notebook]($./04_model_validation)
+
+# COMMAND ----------
+
+
