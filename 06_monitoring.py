@@ -78,6 +78,8 @@ do_inference(predictions_df).write.format("delta").mode("append").saveAsTable(pr
 
 import databricks.lakehouse_monitoring as lm
 
+# COMMAND ----------
+
 print(f"Creating monitor for {prod_predictions}")
 
 info = lm.create_monitor(
@@ -101,10 +103,15 @@ import time
 
 # Wait for monitor to be created
 while info.status == lm.MonitorStatus.PENDING:
+  print(f"Waiting for monitor {prod_predictions} to be created...")
   info = lm.get_monitor(table_name=prod_predictions)
   time.sleep(10)
 
 assert info.status == lm.MonitorStatus.ACTIVE, "Error creating monitor"
+
+# COMMAND ----------
+
+lm.get_monitor(table_name=prod_predictions)
 
 # COMMAND ----------
 
@@ -119,10 +126,6 @@ while run_info.state in (lm.RefreshState.PENDING, lm.RefreshState.RUNNING):
   time.sleep(30)
 
 assert run_info.state == lm.RefreshState.SUCCESS, "Monitor refresh failed"
-
-# COMMAND ----------
-
-lm.get_monitor(table_name=prod_predictions)
 
 # COMMAND ----------
 
