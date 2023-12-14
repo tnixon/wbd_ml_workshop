@@ -1,8 +1,4 @@
 # Databricks notebook source
-dbutils.widgets.dropdown("force_refresh_automl", "false", ["false", "true"], "Restart AutoML run")
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC # Churn Prediction Feature Engineering
 # MAGIC Our first step is to analyze the data and build the features we'll use to train our model. Let's see how this can be done.
@@ -19,7 +15,7 @@ dbutils.widgets.dropdown("force_refresh_automl", "false", ["false", "true"], "Re
 
 # COMMAND ----------
 
-# MAGIC %run ./_resources/00-setup $reset_all_data=false $catalog="wbd_ml_workshop"
+# MAGIC %run ./_resources/00-setup
 
 # COMMAND ----------
 
@@ -101,18 +97,18 @@ churn_features_df = compute_churn_features(telcoDF)
 tableName = 'dbdemos_mlops_churn_features'
 try:
   #drop table if exists
-  fe.drop_table(f'{catalog}.{dbName}.{tableName}')
+  fe.drop_table(f'{dev_catalog}.{dbName}.{tableName}')
 except:
   pass
 #Note: You might need to delete the FS table using the UI
 churn_feature_table = fe.create_table(
-  name=f'{catalog}.{dbName}.{tableName}',
+  name=f'{dev_catalog}.{dbName}.{tableName}',
   primary_keys=['customer_id'],
   schema=churn_features_df.spark.schema(),
   description='These features are derived from the churn_bronze_customers table in the lakehouse.  We created dummy variables for the categorical columns, cleaned up their names, and added a boolean flag for whether the customer churned or not.  No aggregations were performed.'
 )
 
-fe.write_table(df=churn_features_df.to_spark(), name=f'{catalog}.{dbName}.{tableName}')
+fe.write_table(df=churn_features_df.to_spark(), name=f'{dev_catalog}.{dbName}.{tableName}')
 
 # COMMAND ----------
 
@@ -149,16 +145,15 @@ from databricks import automl
 from datetime import datetime
 
 tableName = 'dbdemos_mlops_churn_features'
-# xp_path = f"/Users/{current_user}/databricks_automl/{dbName}"
-# xp_name = f"automl_{dbName}_{datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}"
+xp_path = f"/Users/{current_user}/databricks_automl/{dbName}"
+xp_name = f"automl_{dbName}_{datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}"
 
 automl_run = automl.classify(
-    # experiment_name = xp_name,
-    # experiment_dir = xp_path,
-    dataset = fe.read_table(name = f'{catalog}.{dbName}.{tableName}'),
+    experiment_name = xp_name,
+    experiment_dir = xp_path,
+    dataset = fe.read_table(name = f'{dev_catalog}.{dbName}.{tableName}'),
     target_col = "churn",
-    timeout_minutes = 15,
-    pos_label=1
+    timeout_minutes = 10
     ) 
 
 # COMMAND ----------

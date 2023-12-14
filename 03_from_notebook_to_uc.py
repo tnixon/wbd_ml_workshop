@@ -36,7 +36,7 @@
 
 # COMMAND ----------
 
-# MAGIC %run ./_resources/00-setup $reset_all_data=false $catalog="wbd_ml_workshop"
+# MAGIC %run ./_resources/00-setup
 
 # COMMAND ----------
 
@@ -55,24 +55,21 @@ mlflow.set_registry_uri('databricks-uc')
 # COMMAND ----------
 
 # Let's get the latest experiment ID 
-# xp_name = f"automl_{dbName}_{datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}"
 xp_path = f"/Users/{current_user}/databricks_automl/{dbName}"
 filter_string=f"name LIKE '{xp_path}/%'"
-expId = mlflow.search_experiments(filter_string=filter_string,order_by=["last_update_time DESC"])[0].experiment_id
-print(filter_string)
-print(expId)
+automl_experiment_id = mlflow.search_experiments(filter_string=filter_string,order_by=["last_update_time DESC"])[0].experiment_id
+print(f"Found AutoML experiment id: {automl_experiment_id}")
 
 # COMMAND ----------
 
 # Optional: Load MLflow Experiment and see all runs
-df = spark.read.format("mlflow-experiment").load(expId)
+df = spark.read.format("mlflow-experiment").load(automl_experiment_id)
 display(df)
 
 # COMMAND ----------
 
 # Get our the best model run (search run with highest f1 score)
-expId = mlflow.search_experiments(filter_string=filter_string,order_by=["last_update_time DESC"])[0].experiment_id
-best_model = mlflow.search_runs(experiment_ids=[expId], order_by=["metrics.val_f1_score DESC"], max_results=1, filter_string="status = 'FINISHED'")
+best_model = mlflow.search_runs(experiment_ids=[automl_experiment_id], order_by=["metrics.val_f1_score DESC"], max_results=1, filter_string="status = 'FINISHED'")
 run_id = best_model.iloc[0]['run_id']
 best_model
 
@@ -85,14 +82,14 @@ best_model
 #deploy model in UC
 model_name = f"churn_model_{current_user_no_at}"
 src_model_uri = f"runs:/{run_id}/model"
-dest_model_path = f"{catalog}.{dbName}.{model_name}"
+dest_model_path = f"{dev_catalog}.{dbName}.{model_name}"
 model_alias = "Challenger"
 tablename = 'dbdemos_mlops_churn_features'
-table_path = f"{catalog}.{dbName}.{tablename}"
+table_path = f"{dev_catalog}.{dbName}.{tablename}"
 
 #add some tags that we'll reuse later to validate the model
 client = mlflow.tracking.MlflowClient()
-client.set_tag(run_id, key='demographic_vars', value='seniorCitizen,gender_Female')
+client.set_tag(run_id, key='demographic_vars', value='senior_citizen,gender_female')
 client.set_tag(run_id, key='db_table', value=table_path)
 
 try:
@@ -138,14 +135,6 @@ client.update_model_version(
   version=model_details.version,
   description="This model version was built using XGBoost. Eating too much cake is the sin of gluttony. However, eating too much pie is okay because the sin of pie is always zero."
 )
-
-# COMMAND ----------
-
-model_details.name
-
-# COMMAND ----------
-
-model_version_details
 
 # COMMAND ----------
 

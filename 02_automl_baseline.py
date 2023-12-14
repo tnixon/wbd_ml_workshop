@@ -18,7 +18,7 @@
 
 # COMMAND ----------
 
-# MAGIC %run ./_resources/00-setup $reset_all_data=false $catalog="wbd_ml_workshop"
+# MAGIC %run ./_resources/00-setup
 
 # COMMAND ----------
 
@@ -37,12 +37,11 @@ import mlflow
 #Added for the demo purpose
 xp_path = f"/Users/{current_user}/databricks_automl/{dbName}"
 filter_string=f"name LIKE '{xp_path}/%'"
-expId = mlflow.search_experiments(filter_string=filter_string,order_by=["last_update_time DESC"])[0].experiment_id
-print(filter_string)
-print(expId)
+automl_experiment_id = mlflow.search_experiments(filter_string=filter_string,order_by=["last_update_time DESC"])[0].experiment_id
 
 # Use MLflow to track experiments
-mlflow.set_experiment(experiment_id=expId)
+print(f"setting experiment id: {automl_experiment_id}")
+mlflow.set_experiment(experiment_id=automl_experiment_id)
 
 target_col = "churn"
 
@@ -66,7 +65,8 @@ os.makedirs(input_temp_dir)
 
 # Download the artifact and read it into a pandas DataFrame
 input_client = MlflowClient()
-input_data_path = mlflow.artifacts.download_artifacts(run_id=run["data_run_id"], artifact_path="data", dst_path=input_temp_dir)
+data_run_id = mlflow.search_runs(experiment_ids=[automl_experiment_id], filter_string = "tags.mlflow.source.name='Notebook: DataExploration'").iloc[0].run_id
+input_data_path = mlflow.artifacts.download_artifacts(run_id=data_run_id, artifact_path="data", dst_path=input_temp_dir)
 df_loaded = pd.read_parquet(os.path.join(input_data_path, "training_data"))
 
 # Delete the temp data
@@ -234,7 +234,7 @@ label_encoder_val.fit(y_train)
 y_val_processed = label_encoder_val.transform(y_val)
 
 def objective(params):
-  with mlflow.start_run(experiment_id=run["experiment_id"]) as mlflow_run:
+  with mlflow.start_run(experiment_id=automl_experiment_id) as mlflow_run:
     xgbc_classifier = TransformedTargetClassifier(
         classifier=XGBClassifier(**params),
         transformer=LabelEncoder()  # XGBClassifier requires the target values to be integers between 0 and n_class-1
@@ -368,7 +368,7 @@ fmin(objective,
 
 best_result = trials.best_trial["result"]
 model = best_result["model"]
-mlflow_run = best_result["run"]
+best_trial_run = best_result["run"]
 
 display(
   pd.DataFrame(
@@ -437,7 +437,7 @@ eval_temp_dir = os.path.join(os.environ["SPARK_LOCAL_DIRS"], "tmp", str(uuid.uui
 os.makedirs(eval_temp_dir, exist_ok=True)
 
 # Download the artifact
-eval_path = mlflow.artifacts.download_artifacts(run_id=run['best_trial_run_id'], dst_path=eval_temp_dir)
+eval_path = mlflow.artifacts.download_artifacts(run_id=best_trial_run.info.run_id, dst_path=eval_temp_dir)
 
 # COMMAND ----------
 
@@ -446,7 +446,7 @@ eval_path = mlflow.artifacts.download_artifacts(run_id=run['best_trial_run_id'],
 
 # COMMAND ----------
 
-eval_confusion_matrix_path = os.path.join(eval_path, "confusion_matrix.png")
+eval_confusion_matrix_path = os.path.join(eval_path, "val_confusion_matrix.png")
 display(Image(filename=eval_confusion_matrix_path))
 
 # COMMAND ----------
@@ -456,7 +456,7 @@ display(Image(filename=eval_confusion_matrix_path))
 
 # COMMAND ----------
 
-eval_roc_curve_path = os.path.join(eval_path, "roc_curve_plot.png")
+eval_roc_curve_path = os.path.join(eval_path, "val_roc_curve_plot.png")
 display(Image(filename=eval_roc_curve_path))
 
 # COMMAND ----------
@@ -466,7 +466,7 @@ display(Image(filename=eval_roc_curve_path))
 
 # COMMAND ----------
 
-eval_pr_curve_path = os.path.join(eval_path, "precision_recall_curve_plot.png")
+eval_pr_curve_path = os.path.join(eval_path, "val_precision_recall_curve_plot.png")
 display(Image(filename=eval_pr_curve_path))
 
 # COMMAND ----------

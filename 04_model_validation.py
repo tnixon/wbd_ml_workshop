@@ -37,7 +37,7 @@
 
 # COMMAND ----------
 
-# MAGIC %run ./_resources/00-setup $reset_all_data=false $catalog="wbd_ml_workshop"
+# MAGIC %run ./_resources/00-setup
 
 # COMMAND ----------
 
@@ -59,7 +59,7 @@ mlflow.set_registry_uri('databricks-uc')
 # COMMAND ----------
 
 model_name = f"churn_model_{current_user_no_at}"
-model_path = f"{catalog}.{dbName}.{model_name}"
+model_path = f"{dev_catalog}.{dbName}.{model_name}"
 model_alias = "Challenger"
 
 # Get the challenger model in transition, its name and version from the metadata
@@ -95,9 +95,9 @@ data_source = run_info.data.tags['db_table']
 features = fe.read_table(name=data_source)
 
 # Load model as a Spark UDF
-model_uri = f'models:/{catalog}.{dbName}.{model_name}@Champion'
+model_path = f"{dev_catalog}.{dbName}.{model_name}"
+model_uri = f'models:/{model_path}@{model_alias}'
 loaded_model = mlflow.pyfunc.spark_udf(spark, model_uri=model_uri)
-# loaded_model = mlflow.pyfunc.load_model(model_uri=f"models:/{catalog}.{schema}.{model_name}@prod")
 
 # Select the feature table cols by model input schema
 input_column_names = loaded_model.metadata.get_input_schema().input_names()
@@ -105,11 +105,10 @@ input_column_names = loaded_model.metadata.get_input_schema().input_names()
 # Predict on a Spark DataFrame
 try:
   display(features.withColumn('predictions', loaded_model(*input_column_names)))
-  client.set_model_version_tag(name=f"{catalog}.{dbName}.{model_name}", version=model_details.version, key="predicts", value=1)
+  client.set_model_version_tag(name=model_path, version=model_details.version, key="predicts", value=1)
 except Exception: 
   print("Unable to predict on features.")
-  client.set_model_version_tag(name=f"{catalog}.{dbName}.{model_name}", version=model_details.version, key="predicts", value=0)
-  pass
+  client.set_model_version_tag(name=model_path, version=model_details.version, key="predicts", value=0)
 
 # COMMAND ----------
 
@@ -124,9 +123,9 @@ except Exception:
 
 if not loaded_model.metadata.signature:
   print("This model version is missing a signature.  Please push a new version with a signature!  See https://mlflow.org/docs/latest/models.html#model-metadata for more details.")
-  client.set_model_version_tag(name=f"{catalog}.{dbName}.{model_name}", version=model_details.version, key="has_signature", value=0)
+  client.set_model_version_tag(name=model_path, version=model_details.version, key="has_signature", value=0)
 else:
-  client.set_model_version_tag(name=f"{catalog}.{dbName}.{model_name}", version=model_details.version, key="has_signature", value=1)
+  client.set_model_version_tag(name=model_path, version=model_details.version, key="has_signature", value=1)
 
 # COMMAND ----------
 
@@ -139,25 +138,24 @@ else:
 # COMMAND ----------
 
 import numpy as np
-features = features.withColumn('predictions', loaded_model(*input_column_names)).toPandas()
-features['accurate'] = np.where(features.churn == features.predictions, 1, 0)
+features_pd = features.withColumn('predictions', loaded_model(*input_column_names)).toPandas()
+features_pd['accurate'] = np.where(features_pd.churn == features_pd.predictions, 1, 0)
 
 # Check run tags for demographic columns and accuracy in each segment
 try:
   demographics = run_info.data.tags['demographic_vars'].split(",")
-  slices = features.groupby(demographics).accurate.agg(acc = 'sum', obs = lambda x:len(x), pct_acc = lambda x:sum(x)/len(x))
+  slices = features_pd.groupby(demographics).accurate.agg(acc = 'sum', obs = lambda x:len(x), pct_acc = lambda x:sum(x)/len(x))
   
   # Threshold for passing on demographics is 55%
   demo_test = "pass" if slices['pct_acc'].any() > 0.55 else "fail"
   
   # Set tags in registry
-  client.set_model_version_tag(name=f"{catalog}.{dbName}.{model_name}", version=model_details.version, key="demo_test", value=demo_test)
+  client.set_model_version_tag(name=model_path, version=model_details.version, key="demo_test", value=demo_test)
 
   print(slices)
 except KeyError:
   print("KeyError: No demographics_vars tagged with this model version.")
-  client.set_model_version_tag(name=f"{catalog}.{dbName}.{model_name}", version=model_details.version, key="demo_test", value="none")
-  pass
+  client.set_model_version_tag(name=model_path, version=model_details.version, key="demo_test", value="none")
 
 # COMMAND ----------
 
@@ -170,13 +168,13 @@ except KeyError:
 
 # If there's no description or an insufficient number of charaters, tag accordingly
 if not model_details.description:
-  client.set_model_version_tag(name=f"{catalog}.{dbName}.{model_name}", version=model_details.version, key="has_description", value=0)
+  client.set_model_version_tag(name=model_path, version=model_details.version, key="has_description", value=0)
   print("Did you forget to add a description?")
 elif not len(model_details.description) > 20:
-  client.set_model_version_tag(name=f"{catalog}.{dbName}.{model_name}", version=model_details.version, key="has_description", value=0)
+  client.set_model_version_tag(name=model_path, version=model_details.version, key="has_description", value=0)
   print("Your description is too basic, sorry.  Please resubmit with more detail (40 char min).")
 else:
-  client.set_model_version_tag(name=f"{catalog}.{dbName}.{model_name}", version=model_details.version, key="has_description", value=1)
+  client.set_model_version_tag(name=model_path, version=model_details.version, key="has_description", value=1)
 
 # COMMAND ----------
 
@@ -198,10 +196,10 @@ local_path = client.download_artifacts(run_info.info.run_id, "", local_dir)
 
 # Tag model version as possessing artifacts or not
 if not os.listdir(local_path):
-  client.set_model_version_tag(name=f"{catalog}.{dbName}.{model_name}", version=model_details.version, key="has_artifacts", value=0)
+  client.set_model_version_tag(name=model_path, version=model_details.version, key="has_artifacts", value=0)
   print("There are no artifacts associated with this model.  Please include some data visualization or data profiling.  MLflow supports HTML, .png, and more.")
 else:
-  client.set_model_version_tag(name=f"{catalog}.{dbName}.{model_name}", version=model_details.version,, key = "has_artifacts", value = 1)
+  client.set_model_version_tag(name=model_path, version=model_details.version, key="has_artifacts", value=1)
   print("Artifacts downloaded in: {}".format(local_path))
   print("Artifacts: {}".format(os.listdir(local_path)))
 
@@ -214,58 +212,8 @@ else:
 
 # COMMAND ----------
 
-results = client.get_model_version(name=f"{catalog}.{dbName}.{model_name}", version=model_details.version)
+results = client.get_model_version(name=model_path, version=model_details.version)
 results.tags
-
-# COMMAND ----------
-
-####Validation Completed
-
-# COMMAND ----------
-
-
-
-# COMMAND ----------
-
-
-
-# COMMAND ----------
-
-
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC Notify the Slack channel with the same webhook used to alert on transition change in MLflow.
-
-# COMMAND ----------
-
-slack_message = f"Registered model <b>{model_name}</b> version <b>{model_version}</b> baseline test results: {results.tags}"
-send_notification(slack_message)
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Move to Staging or Archived
-# MAGIC
-# MAGIC The next phase of this models' lifecycle will be to `Staging` or `Archived`, depending on how it fared in testing.
-
-# COMMAND ----------
-
-# If any checks failed, reject and move to Archived
-if '0' in results or 'fail' in results: 
-  print("Rejecting transition...")
-  reject_transition(model_name,
-                   model_version,
-                   stage='Archived',
-                   comment='Tests failed, moving to archived.  Check the tags or the job run to see what happened.')
-  
-else: 
-  print("Accepting transition...")
-  accept_transition(model_name,
-                   model_version,
-                   stage='Staging',
-                   comment='All tests passed!  Moving to staging.')
 
 # COMMAND ----------
 
