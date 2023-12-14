@@ -1,8 +1,4 @@
 # Databricks notebook source
-dbutils.widgets.dropdown("reset_all_data", "false", ["true", "false"], "Reset all data")
-
-# COMMAND ----------
-
 # MAGIC %md 
 # MAGIC # End-to-End MLOps demo with MLFlow, Feature Store and Auto ML
 # MAGIC
@@ -51,7 +47,7 @@ dbutils.widgets.dropdown("reset_all_data", "false", ["true", "false"], "Reset al
 
 # COMMAND ----------
 
-# MAGIC %run ./_resources/00-setup $reset_all_data=$reset_all_data $catalog="wbd_ml_workshop"
+# MAGIC %run ./_resources/00-setup
 
 # COMMAND ----------
 
