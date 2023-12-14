@@ -83,19 +83,13 @@ client = mlflow.tracking.MlflowClient()
 client.set_tag(run_id, key='demographic_vars', value='senior_citizen,gender_female')
 client.set_tag(run_id, key='db_table', value=table_path)
 
-try:
-  #Get the model if it is already registered to avoid re-deploying the endpoint
-  model_details = client.get_model_version_by_alias(dest_model_path, model_alias)
-  print(f"Our model is already deployed on UC: {dest_model_path}")
-except:  
-  #Add model within our catalog
-  model_details = mlflow.register_model(src_model_uri, dest_model_path)
-  # Flag it as Production ready using UC Aliases
-  client.set_tag(run_id, key='db_table', value=table_path)
-  client.set_registered_model_alias(name=dest_model_path, alias=model_alias, version=model_details.version)
-  # refresh the details
-  model_details = client.get_model_version_by_alias(dest_model_path, model_alias)
-
+#Add model within our catalog
+model_details = mlflow.register_model(src_model_uri, dest_model_path)
+# Flag it as Production ready using UC Aliases
+client.set_tag(run_id, key='db_table', value=table_path)
+client.set_registered_model_alias(name=dest_model_path, alias=model_alias, version=model_details.version)
+# refresh the details
+model_details = client.get_model_version_by_alias(dest_model_path, model_alias)
 
 # COMMAND ----------
 
